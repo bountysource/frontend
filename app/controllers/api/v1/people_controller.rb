@@ -225,7 +225,13 @@ class Api::V1::PeopleController < ApplicationController
     require_params(:email)
 
     if (person = Person.find_by_email(params[:email]))
-      person.send_email(:reset_password)
+      if params[:is_salt]
+        site_url = Api::Application.config.salt_url
+      else
+        site_url = Api::Application.config.www_url
+      end
+
+      person.send_email(:reset_password, :site_url => site_url)
       render json: { message: 'Password reset email sent' }
     else
       render json: { error: 'Account not found' }, status: :not_found
